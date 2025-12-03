@@ -39,18 +39,17 @@ function draw() {
     if (audioStarted) {
         // 1秒間のタップ数が閾値を超えているか判定
         if (tapTimestamps.length >= tapsPerSecondThreshold) {
-            if (!panicSound.isPlaying()) {
-                panicSound.loop(); // ループ再生
-            }
+            // 音量を上げて聞こえるようにする
+            panicSound.setVolume(1.0, 0.1);
+
             for (let creature of creatures) {
                 // パニック状態を維持
                 creature.frighten(0.5);
             }
         } else {
-            // 閾値を下回ったら停止
-            if (panicSound.isPlaying()) {
-                panicSound.stop();
-            }
+            // 音量を0にして聞こえなくする（停止はしない）
+            panicSound.setVolume(0, 0.1);
+
             // 即座に落ち着かせる
             for (let creature of creatures) {
                 creature.scareTimer = 0;
@@ -64,13 +63,16 @@ function draw() {
         creature.display();
     }
 
-    // サウンドが再生中の場合のみ文字を表示
-    if (panicSound.isPlaying()) {
-        fill(0);
-        textSize(64);
-        textStyle(ITALIC);
-        textAlign(CENTER, TOP);
-        text('「わーっ！」', width / 2, 20);
+    // 音量が0より大きい（聞こえている）場合のみ文字を表示
+    if (audioStarted && panicSound.getLevel && panicSound.getLevel() > 0.01) { // getLevelが使えない場合はvolumeプロパティで代用したいがp5.soundの仕様による
+        // 単純に閾値判定で表示制御する方が確実
+        if (tapTimestamps.length >= tapsPerSecondThreshold) {
+            fill(0);
+            textSize(64);
+            textStyle(ITALIC);
+            textAlign(CENTER, TOP);
+            text('「わーっ！」', width / 2, 20);
+        }
     }
 
     // オーディオが開始されていない場合、クリックを促すメッセージを表示
@@ -120,9 +122,10 @@ function touchStarted() {
         userStartAudio();
         audioStarted = true;
 
-        // iOS対策：最初のタッチで一度再生してオーディオのロックを解除する
-        panicSound.play();
-        panicSound.stop();
+        // iOS対策：最初のタッチでループ再生を開始し、音量を0にする
+        // これにより「再生中」の状態を維持し、ブロックを防ぐ
+        panicSound.setVolume(0);
+        panicSound.loop();
     }
 
     // タップ時刻を記録
