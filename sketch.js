@@ -6,7 +6,7 @@ let isScreaming = false;
 let audioStarted = false;
 let panicSound; // パニック時に再生するサウンドオブジェクト
 let tapTimestamps = [];
-const tapsPerSecondThreshold = 8; // 1秒間に8回以上のタップが必要（かなりシビア）
+const tapsPerSecondThreshold = 12; // 1秒間に12回以上のタップが必要（さらにシビア）
 
 // 音源ファイルを読み込みます
 function preload() {
