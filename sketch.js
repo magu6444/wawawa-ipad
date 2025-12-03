@@ -5,8 +5,8 @@ const numCreatures = 50; // 画面内のキャラクター数
 let isScreaming = false;
 let audioStarted = false;
 let panicSound; // パニック時に再生するサウンドオブジェクト
-let tapEnergy = 0;
-const tapThreshold = 1.2; // タップでのパニック判定閾値（少し高めに設定）
+let tapTimestamps = [];
+const tapsPerSecondThreshold = 8; // 1秒間に8回以上のタップが必要（かなりシビア）
 
 // 音源ファイルを読み込みます
 function preload() {
@@ -31,19 +31,19 @@ function setup() {
 function draw() {
     background(255);
 
-    // タップエネルギーの減衰（減衰を少し緩やかにして、維持しやすくするが、閾値を高くする）
-    tapEnergy *= 0.92;
+    // 直近1秒間のタップのみを残す
+    const now = millis();
+    tapTimestamps = tapTimestamps.filter(t => now - t < 1000);
 
     // オーディオが開始されている場合
     if (audioStarted) {
-        // タップ連打（トントン相撲）でパニック判定
-        // エネルギーが閾値を超えている間だけパニックになる
-        if (tapEnergy > tapThreshold) {
+        // 1秒間のタップ数が閾値を超えているか判定
+        if (tapTimestamps.length >= tapsPerSecondThreshold) {
             if (!panicSound.isPlaying()) {
                 panicSound.loop(); // ループ再生
             }
             for (let creature of creatures) {
-                // パニック状態を維持（常に少し先の未来までパニック時間を設定）
+                // パニック状態を維持
                 creature.frighten(0.5);
             }
         } else {
@@ -51,7 +51,6 @@ function draw() {
             if (panicSound.isPlaying()) {
                 panicSound.stop();
             }
-            // クリーチャーは自然に落ち着く（scareTimerが減るのを待つ）
         }
     }
 
@@ -116,9 +115,8 @@ function touchStarted() {
         audioStarted = true;
     }
 
-    // タップでエネルギーを追加（トントン相撲）
-    // 2本指（マルチタッチ）や高速連打を想定して調整
-    tapEnergy += 0.5;
+    // タップ時刻を記録
+    tapTimestamps.push(millis());
 
     return false; // デフォルトのタッチ動作（スクロール等）を無効化
 }
