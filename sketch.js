@@ -1,12 +1,12 @@
-let mic;
+// let mic; // マイクは使用しない
 let creatures = [];
 const numCreatures = 50; // 画面内のキャラクター数
-const screamThreshold = 0.08; // この音量を超えるとパニックになる
+// const screamThreshold = 0.08; // マイク閾値は使用しない
 let isScreaming = false;
 let audioStarted = false;
 let panicSound; // パニック時に再生するサウンドオブジェクト
 let tapEnergy = 0;
-const tapThreshold = 1.0; // タップでのパニック判定閾値
+const tapThreshold = 1.2; // タップでのパニック判定閾値（少し高めに設定）
 
 // 音源ファイルを読み込みます
 function preload() {
@@ -31,23 +31,27 @@ function setup() {
 function draw() {
     background(255);
 
-    // タップエネルギーの減衰
-    tapEnergy *= 0.95;
+    // タップエネルギーの減衰（減衰を少し緩やかにして、維持しやすくするが、閾値を高くする）
+    tapEnergy *= 0.92;
 
     // オーディオが開始されている場合
     if (audioStarted) {
-        let micLevel = 0;
-        if (mic) {
-            micLevel = mic.getLevel();
-        }
-
-        // マイク入力 または タップ連打 でパニック判定
-        if ((micLevel > screamThreshold || tapEnergy > tapThreshold) && !panicSound.isPlaying()) {
-            panicSound.play();
-            for (let creature of creatures) {
-                // 音源の長さをパニック時間に設定
-                creature.frighten(panicSound.duration());
+        // タップ連打（トントン相撲）でパニック判定
+        // エネルギーが閾値を超えている間だけパニックになる
+        if (tapEnergy > tapThreshold) {
+            if (!panicSound.isPlaying()) {
+                panicSound.loop(); // ループ再生
             }
+            for (let creature of creatures) {
+                // パニック状態を維持（常に少し先の未来までパニック時間を設定）
+                creature.frighten(0.5);
+            }
+        } else {
+            // 閾値を下回ったら停止
+            if (panicSound.isPlaying()) {
+                panicSound.stop();
+            }
+            // クリーチャーは自然に落ち着く（scareTimerが減るのを待つ）
         }
     }
 
@@ -98,8 +102,8 @@ function draw() {
 function mousePressed() {
     if (!audioStarted) {
         userStartAudio();
-        mic = new p5.AudioIn();
-        mic.start();
+        // mic = new p5.AudioIn();
+        // mic.start();
         audioStarted = true;
     }
 }
@@ -107,13 +111,14 @@ function mousePressed() {
 function touchStarted() {
     if (!audioStarted) {
         userStartAudio();
-        mic = new p5.AudioIn();
-        mic.start();
+        // mic = new p5.AudioIn();
+        // mic.start();
         audioStarted = true;
     }
 
     // タップでエネルギーを追加（トントン相撲）
-    tapEnergy += 0.4;
+    // 2本指（マルチタッチ）や高速連打を想定して調整
+    tapEnergy += 0.5;
 
     return false; // デフォルトのタッチ動作（スクロール等）を無効化
 }
