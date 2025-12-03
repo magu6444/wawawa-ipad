@@ -63,16 +63,13 @@ function draw() {
         creature.display();
     }
 
-    // 音量が0より大きい（聞こえている）場合のみ文字を表示
-    if (audioStarted && panicSound.getLevel && panicSound.getLevel() > 0.01) { // getLevelが使えない場合はvolumeプロパティで代用したいがp5.soundの仕様による
-        // 単純に閾値判定で表示制御する方が確実
-        if (tapTimestamps.length >= tapsPerSecondThreshold) {
-            fill(0);
-            textSize(64);
-            textStyle(ITALIC);
-            textAlign(CENTER, TOP);
-            text('「わーっ！」', width / 2, 20);
-        }
+    // パニック状態（閾値を超えている）なら文字を表示
+    if (audioStarted && tapTimestamps.length >= tapsPerSecondThreshold) {
+        fill(0);
+        textSize(64);
+        textStyle(ITALIC);
+        textAlign(CENTER, TOP);
+        text('「わーっ！」', width / 2, 20);
     }
 
     // オーディオが開始されていない場合、クリックを促すメッセージを表示
