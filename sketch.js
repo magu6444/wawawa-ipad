@@ -112,11 +112,17 @@ function mousePressed() {
 }
 
 function touchStarted() {
+    if (getAudioContext().state !== 'running') {
+        getAudioContext().resume();
+    }
+
     if (!audioStarted) {
         userStartAudio();
-        // mic = new p5.AudioIn();
-        // mic.start();
         audioStarted = true;
+
+        // iOS対策：最初のタッチで一度再生してオーディオのロックを解除する
+        panicSound.play();
+        panicSound.stop();
     }
 
     // タップ時刻を記録
