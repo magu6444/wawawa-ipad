@@ -6,7 +6,7 @@ let isScreaming = false;
 let audioStarted = false;
 let panicSound; // パニック時に再生するサウンドオブジェクト
 let tapTimestamps = [];
-const tapsPerSecondThreshold = 20; // 1秒間に20回以上のタップが必要（極めてシビア）
+const tapsPerSecondThreshold = 15; // 1秒間に15回以上のタップが必要
 
 // 音源ファイルを読み込みます
 function preload() {
@@ -50,6 +50,10 @@ function draw() {
             // 閾値を下回ったら停止
             if (panicSound.isPlaying()) {
                 panicSound.stop();
+            }
+            // 即座に落ち着かせる
+            for (let creature of creatures) {
+                creature.scareTimer = 0;
             }
         }
     }
