@@ -66,12 +66,12 @@ function draw() {
     // パニック状態（閾値を超えている）なら文字を表示
     if (audioStarted && tapTimestamps.length >= tapsPerSecondThreshold) {
         push();
-        fill(255, 0, 0); // 赤色ではっきり表示
+        fill(0);
         noStroke();
-        textSize(80); // サイズを大きく
-        textStyle(BOLD);
-        textAlign(CENTER, CENTER);
-        text('「わーっ！」', width / 2, height / 2); // 画面中央に表示
+        textSize(64);
+        textStyle(ITALIC);
+        textAlign(CENTER, TOP);
+        text('「わーっ！」', width / 2, 20);
         pop();
     }
 
